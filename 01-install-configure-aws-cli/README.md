@@ -14,7 +14,7 @@ Connect to an EC2 instance over SSH, install AWS CLI v2, connect it to an AWS ac
 
 ![CLI v1 already installed](screenshots/02-aws-version-v1.png)
 
-**3. Installed CLI v2 and started the configuration.** I downloaded the installer with `curl`, unzipped it, and ran the install. Then I ran `aws configure` to enter my access key, secret key, region (`us-west-2`), and output format (`json`).
+**3. Ran the v2 installer.** The terminal kept using the older v1, probably because it was still pointing to the old location, but v1 worked fine for the rest of the lab. Then I ran `aws configure` to enter my access key, secret key, region (`us-west-2`), and output format (`json`).
 
 ![Install and configure](screenshots/03-install-and-configure-start.png)
 
