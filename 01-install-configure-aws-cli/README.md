@@ -48,6 +48,6 @@ Printing the file with `cat lab_policy.json` showed the same policy I saw in the
 - **Partial credentials error.** The secret key didn't save on my first try, so the CLI said it was missing `aws_secret_access_key`. Fixed by running `aws configure` again.
 - **SignatureDoesNotMatch.** The account had two access keys, and I used the ID of one with the secret of the other. Using the matching AccessKey and SecretKey pair from the Details panel fixed it.
 
-## What I learned
+
 ## What I learned
 I learned how to install and configure the AWS CLI and connect it to an account using an access key and secret key. I also learned that the keys have to be a matching pair, because mixing them up gave me a SignatureDoesNotMatch error. In the IAM console, I looked at a user, its access keys, and its policy, then pulled the same policy from the terminal. That showed me the console and the CLI are two ways to do the same job.
