@@ -2,17 +2,17 @@
 
 Hands-on labs from the AWS re/Start program, all about launching and running EC2 instances. Region: us-west-2 (Oregon).
 
-I completed these labs for the course first, then redid them from scratch so I could document each step with screenshots.
+I completed these exercises for the course first, then redid them from scratch so I could document each step with screenshots.
 
-| Lab | What it covers | Status |
+| Exercise | What it covers | Status |
 |---|---|---|
-| 171 | Guided EC2 lab: bastion host, launching a web server from the CLI, and fixing why the page wouldn't load | Documented below |
-| 172 | EC2 Instance Challenge: build a VPC and a web server with no step by step guide | Documented below |
-| 173 | Troubleshooting: launch a LAMP server with the AWS CLI from a script that has 2 hidden bugs | Documented below |
+| 1 | Guided EC2 lab: bastion host, launching a web server from the CLI, and fixing why the page wouldn't load | Documented below |
+| 2 | EC2 Instance Challenge: build a VPC and a web server with no step by step guide | Documented below |
+| 3 | Troubleshooting: launch a LAMP server with the AWS CLI from a script that has 2 hidden bugs | Documented below |
 
 ---
 
-## Lab 171: Creating Amazon EC2 Instances
+## Exercise 1: Creating Amazon EC2 Instances
 
 ### The goal
 
@@ -29,7 +29,7 @@ I launched the bastion host from the console into a VPC the lab had already buil
 
 The yellow warning in the screenshot is AWS flagging that SSH is open to `0.0.0.0/0`. Fine for a short lab, and something I would restrict to known IP addresses anywhere that matters.
 
-![Bastion launch settings](screenshots/171-01-bastion-launch-settings.png)
+![Bastion launch settings](screenshots/01-bastion-launch-settings.png)
 
 ### Part 2: Launching the web server from the CLI
 
@@ -42,23 +42,23 @@ From a terminal on the bastion host, I used a short script to look up what the l
 
 The command returned an instance ID, so the instance launched. Two things in the output are worth noticing. The `SG:` line came back blank, so the security group lookup found nothing. And there is a bash error on the region line (`substring expression < 0`).
 
-![CLI launch of the web server](screenshots/171-02-cli-launch-web-server.png)
+![CLI launch of the web server](screenshots/02-cli-launch-web-server.png)
 
 ### Part 3: The page wouldn't load
 
 My first attempt to open the web server in a browser failed with `ERR_NAME_NOT_RESOLVED`. The hostname in the error is just `us-west-2.compute.amazonaws.com`, which is missing the instance specific part at the front, so the browser had nothing to look up.
 
-![Browser error](screenshots/171-03-browser-name-not-resolved.png)
+![Browser error](screenshots/03-browser-name-not-resolved.png)
 
 ### Part 4: The fix
 
 The web server also needed HTTP allowed through its security group. I added an inbound HTTP rule on port 80 to the default security group of `Lab VPC`. The rule list now shows HTTP (TCP, port 80) next to the default All traffic rule.
 
-![Default security group with HTTP rule](screenshots/171-04-default-sg-http-rule.png)
+![Default security group with HTTP rule](screenshots/04-default-sg-http-rule.png)
 
 After that, the page loaded: the default Apache test page, which means Apache was installed and running on the instance.
 
-![Apache test page](screenshots/171-05-apache-test-page.png)
+![Apache test page](screenshots/05-apache-test-page.png)
 
 ### What I learned
 
@@ -69,7 +69,7 @@ After that, the page loaded: the default Apache test page, which means Apache wa
 
 ---
 
-## Lab 172: EC2 Instance Challenge
+## Exercise 2: EC2 Instance Challenge
 
 ### The goal
 
@@ -97,23 +97,23 @@ Build a working web server on Amazon Linux without step by step instructions. Th
 
 I created the VPC first. It is the private network everything else lives in.
 
-![VPC details](screenshots/172-01-vpc.png)
+![VPC details](screenshots/06-vpc.png)
 
 Then the internet gateway, and attached it to the VPC. A new internet gateway starts out detached, so the attach step matters.
 
-![Internet gateway attached](screenshots/172-02-internet-gateway-attached.png)
+![Internet gateway attached](screenshots/07-internet-gateway-attached.png)
 
 Then the subnet, a smaller slice of the VPC's address range. It shows 251 usable addresses because AWS reserves 5 in every subnet.
 
-![Subnet details](screenshots/172-03-subnet.png)
+![Subnet details](screenshots/08-subnet.png)
 
 A subnet is not public just because it exists. It needs a route to the internet gateway. I made a new route table with `0.0.0.0/0` pointing to the IGW (the `10.0.0.0/16` local route is added automatically).
 
-![Route table routes](screenshots/172-04-route-table-routes.png)
+![Route table routes](screenshots/09-route-table-routes.png)
 
 Then I associated that route table with the subnet. Without this step the subnet keeps using the default route table, which has no way out.
 
-![Route table subnet association](screenshots/172-05-route-table-subnet-association.png)
+![Route table subnet association](screenshots/10-route-table-subnet-association.png)
 
 ### Part 2: The security group
 
@@ -122,7 +122,7 @@ I created `web sg` in the new VPC with two inbound rules from the start:
 - HTTP, port 80, so a browser can load the page
 - SSH, port 22, so EC2 Instance Connect works
 
-![Security group inbound rules](screenshots/172-06-security-group-inbound-rules.png)
+![Security group inbound rules](screenshots/11-security-group-inbound-rules.png)
 
 Both rules use Anywhere IPv4 (`0.0.0.0/0`), and the Connect page later warns about it for SSH. That is fine for a short lab, but in a real environment I would restrict SSH to specific IP addresses.
 
@@ -130,15 +130,15 @@ Both rules use Anywhere IPv4 (`0.0.0.0/0`), and the Connect page later warns abo
 
 Name, Amazon Linux AMI, `t3.micro`, and no key pair (I connect through the browser instead).
 
-![Launch AMI and instance type](screenshots/172-07-launch-ami-instance-type.png)
+![Launch AMI and instance type](screenshots/12-launch-ami-instance-type.png)
 
 Network settings: the new VPC, the new subnet, auto-assign public IP set to Enable, and the existing `web sg`. Without the public IP the instance has no address to visit.
 
-![Launch network settings](screenshots/172-08-launch-network-settings.png)
+![Launch network settings](screenshots/13-launch-network-settings.png)
 
 The lab requires a gp2 root volume. The default is gp3, so I switched it manually.
 
-![Storage set to gp2](screenshots/172-09-launch-storage-gp2.png)
+![Storage set to gp2](screenshots/14-launch-storage-gp2.png)
 
 The user data script. It runs once, the first time the instance boots, which is why it has to be set at launch.
 
@@ -155,23 +155,23 @@ chmod -R o+w /var/www/html
 - `systemctl start httpd` starts it now
 - `chmod -R o+w /var/www/html` gives users write permission on the web root, as the lab requires
 
-![User data script](screenshots/172-10-launch-user-data.png)
+![User data script](screenshots/15-launch-user-data.png)
 
 ### Part 4: Verifying the install
 
 The system log is the instance's boot diary. It shows `httpd` and its dependencies installing, `Complete!`, and the `httpd.service` symlink created by `systemctl enable`.
 
-![System log showing httpd installed](screenshots/172-11-system-log-httpd-installed.png)
+![System log showing httpd installed](screenshots/16-system-log-httpd-installed.png)
 
 ### Part 5: Connecting and deploying the page
 
 I connected with EC2 Instance Connect as `ec2-user`. The warning at the bottom is AWS flagging that port 22 is open to the whole internet.
 
-![EC2 Instance Connect page](screenshots/172-12-connect-ec2-instance-connect.png)
+![EC2 Instance Connect page](screenshots/17-connect-ec2-instance-connect.png)
 
 Inside the instance:
 
-![Terminal connected](screenshots/172-13-terminal-connected.png)
+![Terminal connected](screenshots/18-terminal-connected.png)
 
 I created `projects.html` in Apache's web root with `sudo nano`. `sudo` is needed because `/var/www/html` is owned by root.
 
@@ -179,7 +179,7 @@ I created `projects.html` in Apache's web root with `sudo nano`. `sudo` is neede
 sudo nano /var/www/html/projects.html
 ```
 
-![nano with the HTML](screenshots/172-14-nano-projects-html.png)
+![nano with the HTML](screenshots/19-nano-projects-html.png)
 
 Then confirmed the file landed in the right folder:
 
@@ -187,13 +187,13 @@ Then confirmed the file landed in the right folder:
 ls -l /var/www/html
 ```
 
-![ls output](screenshots/172-15-ls-projects-html.png)
+![ls output](screenshots/20-ls-projects-html.png)
 
 ### Result
 
 Opening `http://<public-ip>/projects.html` in a browser returns the page, which proves the full path works: internet gateway, route table, security group on port 80, and Apache.
 
-![Page served from the instance](screenshots/172-16-browser-projects-page.png)
+![Page served from the instance](screenshots/21-browser-projects-page.png)
 
 ### What I learned
 
@@ -209,7 +209,7 @@ Lab resources disappear automatically when the lab session ends. No keys or cred
 
 ---
 
-## Lab 173: Troubleshoot Create Instance
+## Exercise 3: Troubleshoot Create Instance
 
 ### The goal
 
@@ -226,7 +226,7 @@ cp create-lamp-instance-v2.sh create-lamp-instance.backup
 
 The script looks up the VPC, subnet, key pair and AMI, creates a security group, then calls `aws ec2 run-instances`. The user data file runs on the new server's first boot. It installs Apache, PHP and MariaDB, writes a "Hello From Your Web Server!" page, then downloads the cafe site and sets up its database.
 
-![User data script](screenshots/173-01-user-data-script.png)
+![User data script](screenshots/22-user-data-script.png)
 
 One thing you will see when you run the script is a big wall of `UnauthorizedOperation` errors. That is not a bug. The script checks every AWS region for the VPC, and this lab account blocks every region except `us-west-2` with a service control policy (an organization wide rule). It prints an error for each blocked region, then finds the VPC in `us-west-2`.
 
@@ -253,7 +253,7 @@ Every `--region` flag used the `$region` variable the script found earlier, exce
 
 The script even printed "Creating an EC2 instance in us-west-2" (line 155 uses the variable), while line 160 quietly launched in Virginia.
 
-![Error and the grep that found line 160](screenshots/173-02-invalidamiid-error-and-region-grep.png)
+![Error and the grep that found line 160](screenshots/23-invalidamiid-error-and-region-grep.png)
 
 **Fix.** Replace the hard coded region with the variable, then compare against the backup:
 
@@ -262,17 +262,17 @@ sed -i '160s/us-east-1/$region/' create-lamp-instance-v2.sh
 diff create-lamp-instance.backup create-lamp-instance-v2.sh
 ```
 
-![Region fix diff](screenshots/173-03-fix-region-diff.png)
+![Region fix diff](screenshots/24-fix-region-diff.png)
 
 I reran the script. It noticed the security group from the failed run and asked to delete it, and I answered `y`. This time `run-instances` succeeded and printed a public IP.
 
-![Script succeeded](screenshots/173-04-script-success-first-run.png)
+![Script succeeded](screenshots/25-script-success-first-run.png)
 
 ### Issue 2: the web page times out
 
 **Symptom.** The instance existed, but the page would not load. The browser said `ERR_CONNECTION_TIMED_OUT`. A timeout means the request never got an answer, which usually points at a firewall silently dropping traffic. That is different from "connection refused", where the server answers that nothing is listening.
 
-![Browser timeout](screenshots/173-05-browser-timeout.png)
+![Browser timeout](screenshots/26-browser-timeout.png)
 
 **Finding it.** I installed `nmap` on the CLI Host and scanned the new server. nmap is a port scanner, and it reports each port as open, closed or filtered.
 
@@ -281,7 +281,7 @@ sudo yum install -y nmap
 nmap -Pn <public-ip>
 ```
 
-![nmap scan](screenshots/173-06-nmap-scan.png)
+![nmap scan](screenshots/27-nmap-scan.png)
 
 How to read it:
 - `22/tcp open`: SSH is reachable
@@ -301,7 +301,7 @@ grep -n "port" create-lamp-instance-v2.sh
 
 The message says 80, and the command underneath says 8080. One typo, and the security group never allowed port 80.
 
-![The port typo](screenshots/173-07-grep-port-bug.png)
+![The port typo](screenshots/28-grep-port-bug.png)
 
 **Fix.**
 
@@ -310,35 +310,35 @@ sed -i 's/--port 8080/--port 80/' create-lamp-instance-v2.sh
 grep -n "port" create-lamp-instance-v2.sh
 ```
 
-![Port fixed](screenshots/173-08-grep-port-fixed.png)
+![Port fixed](screenshots/29-grep-port-fixed.png)
 
 Comparing against the backup now shows both fixes in one view, line 149 (port) and line 160 (region):
 
-![Both fixes](screenshots/173-09-both-fixes-diff.png)
+![Both fixes](screenshots/30-both-fixes-diff.png)
 
 I reran the script, answered `y` to the delete prompts, and it launched a fresh instance with a new public IP.
 
-![Second run succeeded](screenshots/173-10-script-success-second-run.png)
+![Second run succeeded](screenshots/31-script-success-second-run.png)
 
 After waiting a couple of minutes for the first boot to finish, `http://<public-ip>` returned the page the user data writes:
 
-![Hello page](screenshots/173-11-hello-page.png)
+![Hello page](screenshots/32-hello-page.png)
 
 ### Verifying the cafe site
 
 The cafe home page loads at `/cafe/`:
 
-![Cafe home](screenshots/173-12-cafe-home.png)
+![Cafe home](screenshots/33-cafe-home.png)
 
 To test the database behind it, I placed an order from the menu. The total came to $74.50 across 9 items.
 
-![Cafe menu](screenshots/173-13-cafe-menu.png)
+![Cafe menu](screenshots/34-cafe-menu.png)
 
-![Order confirmation](screenshots/173-14-order-confirmation.png)
+![Order confirmation](screenshots/35-order-confirmation.png)
 
 Then I placed a second order (14 donuts, $14.00). Order History lists both, which proves the orders were saved in the MariaDB database and the whole chain works: browser, Apache, PHP, database.
 
-![Order history](screenshots/173-15-order-history.png)
+![Order history](screenshots/36-order-history.png)
 
 I did not check `cloud-init-output.log` in this run. The working cafe site and database already show the user data script ran.
 
