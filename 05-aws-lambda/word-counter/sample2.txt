@@ -1,0 +1,1 @@
+Cloud security starts with understanding how services talk to each other. Lambda reads the file, counts every word, and sends the answer by email so the whole flow is easy to verify end to end after each upload.
